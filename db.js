@@ -1,19 +1,42 @@
 const dns = require('dns');
-dns.setDefaultResultOrder('ipv4first'); // ✅ Prefer IPv4 to avoid Render IPv6 issues
-
 const { Pool } = require('pg');
 require('dotenv').config();
 
-const pool = new Pool({
-  connectionString: process.env.DATABASE_URL,
-  ssl: {
-    require: true,             // ✅ Force SSL
-    rejectUnauthorized: false  // ✅ Ignore self-signed cert issue
+async function createPool() {
+  const databaseUrl = process.env.DATABASE_URL;
+
+  // Extract host from DATABASE_URL
+  const match = databaseUrl.match(/@([^:/]+):(\d+)\//);
+  if (!match) {
+    throw new Error('Invalid DATABASE_URL format');
   }
-});
 
-pool.connect()
-  .then(() => console.log('✅ Connected to PostgreSQL Database'))
-  .catch(err => console.error('❌ Connection error', err));
+  const host = match[1];
+  const port = match[2];
 
-module.exports = pool;
+  // Resolve IPv4 for Supabase host
+  const { address } = await dns.promises.lookup(host, { family: 4 });
+  console.log(`✅ Using IPv4 address for DB: ${address}`);
+
+  // Replace host with IPv4 in connection string
+  const ipv4ConnectionString = databaseUrl.replace(host, address);
+
+  const pool = new Pool({
+    connectionString: ipv4ConnectionString,
+    ssl: {
+      require: true,
+      rejectUnauthorized: false
+    }
+  });
+
+  try {
+    await pool.connect();
+    console.log('✅ Connected to PostgreSQL Database via IPv4');
+  } catch (err) {
+    console.error('❌ Connection error', err);
+  }
+
+  return pool;
+}
+
+module.exports = createPool();
