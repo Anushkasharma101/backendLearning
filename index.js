@@ -10,7 +10,7 @@ const adminRoutes = require('./routes/adminRoutes');
 const app = express();
 app.use(cors());
 app.use(express.json());
-
+console.log("Running Node version:", process.version);
 // Routes
 app.use('/api/auth', authRoutes);
 app.use('/api/stores', storeRoutes);
