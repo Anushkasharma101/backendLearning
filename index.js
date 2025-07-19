@@ -7,7 +7,7 @@ const cors = require('cors');
 const app = express();
 const allowedOrigins = [
   "http://localhost:3000",
-  "https://store-rating-app-henna.vercel.app/"  // Replace with deployed frontend URL
+  "https://store-rating-app-henna.vercel.app"  // Replace with deployed frontend URL
 ];
 
 app.use(cors({
@@ -15,11 +15,12 @@ app.use(cors({
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
     } else {
+      console.error("❌ CORS Blocked Origin:", origin);
       callback(new Error("CORS not allowed"));
     }
   },
-  methods: "GET,POST,PUT,PATCH,DELETE",
-  allowedHeaders: "Content-Type,Authorization",
+  methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
+  allowedHeaders: ["Content-Type", "Authorization"],
 }));
 
 
