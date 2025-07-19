@@ -1,9 +1,10 @@
 const dns = require('dns');
 dns.setDefaultResultOrder('ipv4first');
+require('dotenv').config();
 
 const express = require('express');
 const cors = require('cors');
-require('dotenv').config();
+app.use(cors());
 
 require('./db');
 
@@ -13,7 +14,6 @@ const ratingRoutes = require('./routes/ratingRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 
 const app = express();
-app.use(cors());
 app.use(express.json());
 console.log("Running Node version:", process.version);
 // Routes
