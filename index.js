@@ -4,6 +4,7 @@ require('dotenv').config();
 
 const express = require('express');
 const cors = require('cors');
+const app = express();
 app.use(cors());
 
 require('./db');
@@ -13,7 +14,6 @@ const storeRoutes = require('./routes/storeRoutes');
 const ratingRoutes = require('./routes/ratingRoutes');
 const adminRoutes = require('./routes/adminRoutes');
 
-const app = express();
 app.use(express.json());
 console.log("Running Node version:", process.version);
 // Routes
