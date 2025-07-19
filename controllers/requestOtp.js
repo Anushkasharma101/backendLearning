@@ -36,11 +36,14 @@ exports.requestOtp = async (req, res) => {
     const expiresAt = new Date(Date.now() + expiryMinutes * 60 * 1000);
 
     // Insert OTP into DB
+    console.log("Inserting OTP for:",email, otp, expiresAt)
     await pool.query(
       `INSERT INTO password_resets (email, otp, expires_at, last_sent_at)
        VALUES ($1, $2, $3, NOW())`,
       [email, otp, expiresAt]
     );
+
+    console.log("OTP inserted successfully");
 
     // Send email
     await sendEmail(email, "Password Reset OTP", `Your OTP is ${otp}. It will expire in ${expiryMinutes} minutes.`);

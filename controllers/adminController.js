@@ -30,6 +30,8 @@ exports.addUser = async (req, res) => {
 
     // Check if email exists
     const userCheck = await pool.query('SELECT id FROM users WHERE email=$1', [email]);
+    console.log("rows",userCheck.rows.length);
+    
     if (userCheck.rows.length > 0)
       return res.status(400).json({ msg: "Email already exists" });
 
