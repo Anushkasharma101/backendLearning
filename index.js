@@ -5,11 +5,23 @@ require('dotenv').config();
 const express = require('express');
 const cors = require('cors');
 const app = express();
+const allowedOrigins = [
+  "http://localhost:3000",
+  "https://store-rating-app-henna.vercel.app/"  // Replace with deployed frontend URL
+];
+
 app.use(cors({
-  origin: "*",  // Or specify your frontend URL
-  methods: ["GET", "POST", "PUT", "PATCH", "DELETE"],
-  allowedHeaders: ["Content-Type", "Authorization"],
+  origin: (origin, callback) => {
+    if (!origin || allowedOrigins.includes(origin)) {
+      callback(null, true);
+    } else {
+      callback(new Error("CORS not allowed"));
+    }
+  },
+  methods: "GET,POST,PUT,PATCH,DELETE",
+  allowedHeaders: "Content-Type,Authorization",
 }));
+
 
 
 require('./db');
