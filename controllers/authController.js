@@ -8,7 +8,8 @@ const passwordRegex = /^(?=.*[A-Z])(?=.*[!@#$%^&*])[A-Za-z\d!@#$%^&*]{8,16}$/;
 exports.register = async (req, res) => {
   try {
     const { name, email, password, role, address } = req.body;
-
+    console.log(name,email,password,role,address,typeof(name),typeof(email),typeof(password),typeof(role),typeof(address));
+    
     // ✅ Validations
     if (!name || name.length < 20 || name.length > 60) {
       return res.status(400).json({ msg: "Name must be between 20-60 characters" });
