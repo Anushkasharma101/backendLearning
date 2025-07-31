@@ -7,7 +7,7 @@ const cors = require('cors');
 const app = express();
 const allowedOrigins = [
   "http://localhost:3000",
-  "https://store-rating-app-henna.vercel.app"  // Replace with deployed frontend URL
+  "https://store-rating-app-henna.vercel.app"  
 ];
 
 app.use(cors({

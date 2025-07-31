@@ -1,6 +1,7 @@
 const jwt = require('jsonwebtoken');
 
 exports.authenticate = (req, res, next) => {
+  console.log("🔐 authenticate middleware triggered");
   try {
     const token = req.cookies?.authToken || req.headers.authorization?.split(' ')[1];
     if (!token) return res.status(401).json({ msg: 'No token, authorization denied' });
