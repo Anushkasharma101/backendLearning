@@ -8,57 +8,48 @@ exports.submitRating = async (req, res) => {
     if (!store_id || rating < 1 || rating > 5)
       return res.status(400).json({ msg: "Invalid store ID or rating" });
 
-    const check = await pool.query(
-      "SELECT id FROM ratings WHERE user_id=$1 AND store_id=$2",
+    // Check if rating already exists
+    const existing = await pool.query(
+      'SELECT * FROM ratings WHERE user_id=$1 AND store_id=$2',
       [userId, store_id]
     );
+    if (existing.rows.length > 0)
+      return res.status(400).json({ msg: "Rating already exists, use update" });
 
-    if (check.rows.length > 0) {
-      // Update
-      await pool.query(
-        "UPDATE ratings SET rating=$1, created_at=NOW() WHERE user_id=$2 AND store_id=$3",
-        [rating, userId, store_id]
-      );
-      return res.json({ msg: "Rating updated" });
-    } else {
-      // Insert
-      const result = await pool.query(
-        'INSERT INTO ratings (user_id, store_id, rating) VALUES ($1, $2, $3) RETURNING *',
-        [userId, store_id, rating]
-      );
-      return res.json({ msg: "Rating submitted", rating: result.rows[0] });
-    }
+    const result = await pool.query(
+      'INSERT INTO ratings (user_id, store_id, rating) VALUES ($1, $2, $3) RETURNING *',
+      [userId, store_id, rating]
+    );
+    res.json({ msg: "Rating submitted", rating: result.rows[0] });
   } catch (err) {
     console.error(err);
     res.status(500).json({ msg: "Server error" });
   }
 };
 
-
 exports.updateRating = async (req, res) => {
   try {
-    const { store_id, rating } = req.body;
+    const ratingId = req.params.id;
+    const { rating } = req.body;
     const userId = req.user.userId;
 
-    if (!store_id || rating < 1 || rating > 5)
-      return res.status(400).json({ msg: "Invalid store ID or rating" });
+    if (rating < 1 || rating > 5)
+      return res.status(400).json({ msg: "Invalid rating" });
 
-    const check = await pool.query(
-      "SELECT id FROM ratings WHERE user_id=$1 AND store_id=$2",
-      [userId, store_id]
+    const existing = await pool.query(
+      'SELECT * FROM ratings WHERE id=$1 AND user_id=$2',
+      [ratingId, userId]
     );
-
-    if (check.rows.length === 0)
-      return res.status(404).json({ msg: "No existing rating found to update" });
+    if (existing.rows.length === 0)
+      return res.status(404).json({ msg: "Rating not found" });
 
     await pool.query(
-      "UPDATE ratings SET rating=$1, created_at=NOW() WHERE user_id=$2 AND store_id=$3",
-      [rating, userId, store_id]
+      'UPDATE ratings SET rating=$1 WHERE id=$2',
+      [rating, ratingId]
     );
-
-    res.json({ msg: "Rating updated successfully" });
+    res.json({ msg: "Rating updated" });
   } catch (err) {
-    console.error("Update rating error:", err);
+    console.error(err);
     res.status(500).json({ msg: "Server error" });
   }
 };

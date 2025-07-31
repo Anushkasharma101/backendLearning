@@ -1,4 +1,4 @@
-const pool = require("../db");
+const pool = require('../db');
 
 // Get all stores with average rating and user's rating
 exports.getAllStores = async (req, res) => {
@@ -6,27 +6,13 @@ exports.getAllStores = async (req, res) => {
     const userId = req.user.userId;
 
     const query = `
-      SELECT 
-        s.id, 
-        s.name, 
-        s.address,
-        ROUND(COALESCE(AVG(r.rating), 0)::numeric, 2) AS avg_rating
-        ur.user_rating,
-        ur.rating_id
+      SELECT s.id, s.name, s.address,
+        COALESCE(AVG(r.rating), 0) as avg_rating,
+        (SELECT rating FROM ratings WHERE user_id=$1 AND store_id=s.id LIMIT 1) as user_rating
       FROM stores s
       LEFT JOIN ratings r ON s.id = r.store_id
-      LEFT JOIN (
-        SELECT DISTINCT ON (store_id)
-          store_id, 
-          rating AS user_rating, 
-          id AS rating_id
-        FROM ratings
-        WHERE user_id = $1
-        ORDER BY store_id, created_at DESC
-      ) ur ON s.id = ur.store_id
-      GROUP BY s.id, ur.user_rating, ur.rating_id;
+      GROUP BY s.id;
     `;
-
     const result = await pool.query(query, [userId]);
     res.json(result.rows);
   } catch (err) {
@@ -59,8 +45,8 @@ exports.searchStores = async (req, res) => {
       conditions.push(`s.address ILIKE $${params.length + 1}`);
       params.push(`%${address}%`);
     }
-    if (conditions.length > 0) query += " WHERE " + conditions.join(" AND ");
-    query += " GROUP BY s.id";
+    if (conditions.length > 0) query += ' WHERE ' + conditions.join(' AND ');
+    query += ' GROUP BY s.id';
 
     const result = await pool.query(query, params);
     res.json(result.rows);
@@ -73,8 +59,7 @@ exports.searchStores = async (req, res) => {
 // Store Owner dashboard: users who rated + average rating
 exports.ownerDashboard = async (req, res) => {
   try {
-    if (req.user.role !== "OWNER")
-      return res.status(403).json({ msg: "Access denied" });
+    if (req.user.role !== 'OWNER') return res.status(403).json({ msg: 'Access denied' });
 
     const ownerId = req.user.userId;
     const query = `

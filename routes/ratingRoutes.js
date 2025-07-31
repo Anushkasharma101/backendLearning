@@ -1,11 +1,10 @@
 const express = require('express');
 const { authenticate } = require('../middleware/authMiddleware');
-const { submitRating } = require('../controllers/ratingController');
-const { updateRating } = require('../controllers/ratingController')
+const { submitRating, updateRating } = require('../controllers/ratingController');
 
 const router = express.Router();
 
-router.post('/', authenticate, submitRating); 
-router.post('/update', authenticate, updateRating); 
+router.post('/', authenticate, submitRating); // Submit rating
+router.put('/:id', authenticate, updateRating); // Update rating
 
 module.exports = router;
